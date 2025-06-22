@@ -45,9 +45,6 @@
     <ClCompile Include="Player.cpp">
       <Filter>Source Files\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>Source Files\Entities</Filter>
-    </ClCompile>
     <ClCompile Include="Level.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
@@ -57,6 +54,9 @@
     <ClCompile Include="HUD.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files\Entities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.hpp">
@@ -64,9 +64,6 @@
     </ClInclude>
     <ClInclude Include="Player.hpp">
       <Filter>Source Files\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="Entity.hpp">
-      <Filter>Source Files\Entities</Filter>
     </ClInclude>
     <ClInclude Include="Level.hpp">
       <Filter>Source Files\World</Filter>
@@ -85,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="resources.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.hpp">
+      <Filter>Source Files\Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

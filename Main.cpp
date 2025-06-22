@@ -6,11 +6,11 @@
 // Alternatives: None for SFML window creation. You'd use different headers for different libraries (e.g., GLFW, SDL).
 #include <SFML/Graphics.hpp>
 #include <iostream>
-
+#include "Game/Game.hpp"
 
 int main()
 {
-   
+   /*
     sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Super Mario Clone", sf::Style::Close | sf::Style::Resize);
 
     window.setVerticalSyncEnabled(false);
@@ -55,7 +55,7 @@ int main()
             /* How it works : playerSpeed is in pixels / second.deltaTime.asSeconds() provides the time in seconds.
                                  Multiplying them gives the distance to move this frame: pixels/second * seconds = pixels.
             */ 
-            player.move({ playerSpeed * deltaTime.asSeconds(), 0.f }); // Move right
+     /*       player.move({playerSpeed * deltaTime.asSeconds(), 0.f}); // Move right
         }
         // What it does: Checks if the 'A' key is currently pressed.
         // Why it's used: To control player movement to the left.
@@ -78,7 +78,7 @@ int main()
         {
             player.move({ 0.f, playerSpeed * deltaTime.asSeconds() }); // Move down
         }
-
+        */
 
         /*
             // practice challange.
@@ -122,7 +122,7 @@ int main()
 
 
 		//3--------- render the game objects.
-        window.clear(sf::Color(0, 100, 200)); // A nice dark blue color
+    /*    window.clear(sf::Color(0, 100, 200)); // A nice dark blue color
 
 		window.draw(player); // Draw the player rectangle
         
@@ -130,7 +130,21 @@ int main()
     }
 
   
-    return 0;
+        return 0;
+    */
+    // What it does: Creates an instance of our Game class.
+      // Why it's used: This object encapsulates our entire game.
+      // How it works: Calls the Game class constructor.
+Game game;
+
+// What it does: Starts the main game loop.
+// Why it's used: Begins the continuous update and rendering of the game.
+// How it works: Calls the public run() method of our game object.
+game.run();
+
+// What it does: Indicates successful program termination.
+// Why it's used: Standard practice for main functions.
+return 0;
 }
 
-// session-2 finished
+// session-4 finished
