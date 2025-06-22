@@ -162,7 +162,7 @@ void Game::render()
 // updated one
 
 // Source/Game/Game.cpp
-
+/*
 #include "Game.hpp" // Always include your own header first
 
 Game::Game()
@@ -261,4 +261,156 @@ void Game::render()
     m_player.render(m_window); // NEW: Delegate render to Player
 
     m_window.display();
+}
+
+*/
+
+
+// Source/Game/Game.cpp
+
+#include "Game.hpp" // Always include your own header first
+#include <memory>
+// What it does: Game class constructor implementation.
+// Why it's used: Initializes game window, texture manager, player, and loads assets.
+Game::Game()
+    : m_window(sf::VideoMode({ 800, 600 }), "Super Mario Clone - Session 5", sf::Style::Close | sf::Style::Resize),
+    // REMOVED: Initializing m_player directly here. Player now needs a texture.
+    m_backgroundColorValue(200.f),
+    m_colorIncreasing(false),
+    m_isPaused(false)
+{
+    m_window.setVerticalSyncEnabled(false);
+    m_window.setFramerateLimit(60);
+
+    // What it does: Calls the helper function to load all game assets.
+    // Why it's used: Separates asset loading logic from constructor for clarity.
+    loadAssets(); // NEW: Call to load assets
+
+    // What it does: Initializes the player *after* textures are loaded.
+    // Why it's used: The Player constructor now requires a loaded texture.
+    // How it works: Passes the texture retrieved from m_textureManager.
+    //m_backgroundSprite.setTexture(m_textureManager.getTexture("background_sky")); // NEW: Set background texture
+    m_player = std::make_unique<Player>(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture")); // NEW: Initialize player with its texture
+
+    m_backgroundSprite.emplace(m_textureManager.getTexture("background_sky")); // 
+    m_backgroundSprite->setPosition({ 0.f, 0.f });
+
+    // What it does: Sets the background sprite's texture.
+    // Why it's used: To display the loaded background image.
+    // How it works: Gets the texture from m_textureManager and assigns it to m_backgroundSprite.
+    // What it does: Scales the background sprite to fit the window.
+    // Why it's used: Ensures the background image covers the entire window regardless of its original resolution.
+    // How it works: Calculates scale factors based on window size and sprite texture size.
+    sf::Vector2u windowSize = m_window.getSize();
+    sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
+    m_backgroundSprite->setScale(
+        { static_cast<float>(windowSize.x / bgTexSize.x),
+         static_cast<float>(windowSize.y / bgTexSize.y)
+        });
+}
+
+void Game::run()
+{
+    while (m_window.isOpen())
+    {
+        sf::Time deltaTime = m_clock.restart();
+        processEvents();
+        update(deltaTime);
+        render();
+    }
+}
+
+void Game::processEvents()
+{
+    while (std::optional event = m_window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>()) { m_window.close(); }
+        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+            sf::FloatRect visibleArea({ 0, 0 }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
+            m_window.setView(sf::View(visibleArea));
+        };
+            // NEW: Rescale background when window resizes
+            sf::Vector2u windowSize = m_window.getSize();
+            sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
+            m_backgroundSprite->setScale(
+                { static_cast<float>(windowSize.x / bgTexSize.x),
+                 static_cast<float>(windowSize.y / bgTexSize.y) }
+            );
+        if (const auto key = event->getIf<sf::Event::KeyPressed>()) {
+            if (key->scancode == sf::Keyboard::Scancode::P) {
+                m_isPaused = !m_isPaused;
+                std::cout << "Game " << (m_isPaused ? "PAUSED" : "RESUMED") << std::endl;
+            }
+        }
+    }
+}
+
+void Game::update(sf::Time deltaTime)
+{
+   if (!m_isPaused)
+    {
+        // What it does: Calls player's update method, passing window size for boundary checks.
+        // Why it's used: Delegates player logic to the Player class.
+        if (m_player)
+            m_player->update(deltaTime, m_window.getSize());
+
+        const float colorChangeSpeed = 50.f;
+        if (m_colorIncreasing) {
+            m_backgroundColorValue += colorChangeSpeed * deltaTime.asSeconds();
+        }
+        else {
+            m_backgroundColorValue -= colorChangeSpeed * deltaTime.asSeconds();
+        }
+        if (m_backgroundColorValue <= 0.f) {
+            m_backgroundColorValue = 0.f;
+            m_colorIncreasing = true;
+        }
+        else if (m_backgroundColorValue >= 200.f) {
+            m_backgroundColorValue = 200.f;
+            m_colorIncreasing = false;
+        }
+    }
+    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
+
+}
+void Game::render()
+{
+    // What it does: Clears the window.
+    // Why it's used: Prepares the screen for drawing.
+    m_window.clear();       // changed
+
+     if (m_backgroundSprite) {
+         m_backgroundSprite->setPosition({ 0, 0 });
+         m_backgroundSprite->setScale({ 2.0f, 3.0f }); // Zoom to test
+         m_window.draw(*m_backgroundSprite);
+         
+        std::cout << "DRwaing the backgroundimage";
+     }
+     else
+     {
+         std::cout << "Background sprite is null!" << std::endl;
+     }
+    // What it does: Draws the player sprite.
+    // Why it's used: Displays the player on top of the background.
+    if (m_player)
+        m_player->render(m_window);
+
+
+    m_window.display();
+}
+
+// What it does: Implements the asset loading logic.
+// Why it's used: Central place to load all textures needed for the game.
+// How it works: Calls m_textureManager.loadTexture() for each asset.
+void Game::loadAssets()
+{
+    // What it does: Loads the player's sprite sheet.
+    // Why it's used: Provides the image data for the player's sprite.
+    // How it works: Uses a unique ID "player_texture" and the path to the PNG file.
+    m_textureManager.loadTexture("player_texture", "assets/Textures/player_spritesheet.png"); // Adjust path if needed
+    // What it does: Loads the background sky texture.
+    // Why it's used: Provides the image data for the game's background.
+    m_textureManager.loadTexture("background_sky", "assets/Textures/background_sky.png"); // Adjust path if needed
+
+    // Can add more textures here as needed (e.g., coins, enemies, tiles)
 }

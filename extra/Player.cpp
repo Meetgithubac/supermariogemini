@@ -1,5 +1,5 @@
 // Source/Player/Player.cpp
-
+/*
 #include "Player.hpp" // Always include your own header first
 
 // What it does: Player class constructor implementation.
@@ -107,6 +107,104 @@ void Player::handleInput()
     {
         float length = std::sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y);
         if (length > 0.f) // Avoid division by zero
+        {
+            m_velocity.x /= length;
+            m_velocity.y /= length;
+        }
+    }
+}
+*/
+
+// Source/Player/Player.cpp
+
+#include "Player.hpp"
+
+// What it does: Player class constructor implementation. Now takes a texture.
+// Why it's used: Initializes player with its visual texture and other properties.
+// How it works: Sets the texture for m_sprite, sets its position, and scale.
+Player::Player(sf::Vector2f startPosition, sf::Vector2f size, sf::Texture& texture)
+    :m_sprite(texture), // Initialize m_sprite                                                      // error occured.
+    m_velocity(0.f, 0.f),
+    m_movementSpeed(200.f)
+{
+    // What it does: Associates the loaded texture with the sprite.
+    // Why it's used: The sprite needs to know what image data to draw.
+    // How it works: Calls setTexture() on the m_sprite object.
+    m_sprite.setTexture(texture);
+    // What it does: Sets the source rectangle for the sprite.
+    // Why it's used: If the texture is a sprite sheet, this specifies which part of the image to display.
+    //               For a single image, it just shows the whole image. For Mario, this will be crucial for animation.
+    // How it works: sf::IntRect(left, top, width, height). Assuming 16x32 pixel Mario.
+    m_sprite.setTextureRect(sf::IntRect({ 0, 0 }, { 16, 32 })); // Adjust based on your actual sprite size
+
+    // What it does: Scales the sprite to match the desired visual size.
+    // Why it's used: Original NES sprites might be too small for modern screens.
+    //               We want our 16x32 sprite to appear as 50x50 on screen for now.
+    // How it works: Divides target size by original texture rect size.
+    float scaleX = size.x / m_sprite.getGlobalBounds().size.x;
+    float scaleY = size.y / m_sprite.getGlobalBounds().size.y;
+    m_sprite.setScale({ scaleX, scaleY });
+
+    // What it does: Sets the initial position of the player's sprite.
+    // Why it's used: Places the player at its starting point.
+    // How it works: Calls setPosition() on m_sprite.
+    m_sprite.setPosition(startPosition);
+}
+
+void Player::update(sf::Time deltaTime, sf::Vector2u windowSize)
+{
+    handleInput();
+    // What it does: Moves the sprite based on calculated velocity and delta time.
+    // Why it's used: Updates the visual position of the player.
+    // How it works: Calls move() on m_sprite.
+    m_sprite.move(m_velocity * m_movementSpeed * deltaTime.asSeconds());
+
+    // --- Boundary Checks (modified to use m_sprite's properties) ---
+    sf::Vector2f playerPos = m_sprite.getPosition();
+    sf::Vector2f playerSize = sf::Vector2f(m_sprite.getGlobalBounds().size.x, m_sprite.getGlobalBounds().size.y); // Get actual scaled size
+
+    if (playerPos.x < 0) { m_sprite.setPosition({ 0, playerPos.y }); }
+    else if (playerPos.x + playerSize.x > windowSize.x) { m_sprite.setPosition({ windowSize.x - playerSize.x, playerPos.y }); }
+
+    if (playerPos.y < 0) { m_sprite.setPosition({playerPos.x, 0}); }
+    else if (playerPos.y + playerSize.y > windowSize.y) { m_sprite.setPosition({ playerPos.x, windowSize.y - playerSize.y }); }
+}
+
+void Player::render(sf::RenderWindow& window)
+{
+    // What it does: Draws the player's sprite onto the window.
+    // Why it's used: To display the textured player.
+    // How it works: Calls window.draw() with m_sprite.
+    window.draw(m_sprite);
+}
+
+sf::Vector2f Player::getPosition() const
+{
+    // What it does: Returns the current position of the sprite.
+    // Why it's used: Other objects need player's location.
+    return m_sprite.getPosition();
+}
+
+sf::FloatRect Player::getGlobalBounds() const
+{
+    // What it does: Returns the global bounding box of the sprite (after scale).
+    // Why it's used: For accurate collision detection.
+    return m_sprite.getGlobalBounds();
+}
+
+void Player::handleInput()
+{
+    m_velocity = sf::Vector2f(0.f, 0.f);
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) { m_velocity.x -= 1.f; }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) { m_velocity.x += 1.f; }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) { m_velocity.y -= 1.f; }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) { m_velocity.y += 1.f; }
+
+    if (m_velocity.x != 0.f || m_velocity.y != 0.f)
+    {
+        float length = std::sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y);
+        if (length > 0.f)
         {
             m_velocity.x /= length;
             m_velocity.y /= length;

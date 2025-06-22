@@ -82,7 +82,7 @@ private: // Private members are only accessible from within the class itself.
 
 //updated one
 
-
+/*
 // Source/Game/Game.hpp
 
 #pragma once
@@ -117,4 +117,51 @@ private:
     void processEvents();
     void update(sf::Time deltaTime);
     void render();
+};
+
+*/
+
+// Source/Game/Game.hpp
+
+#pragma once
+
+#include <SFML/Graphics.hpp>
+#include <iostream>
+
+#include "Player.hpp"
+#include "TextureManager.hpp" // NEW: Include TextureManager header
+
+class Game
+{
+public:
+    Game();
+    void run();
+
+private:
+    sf::RenderWindow m_window;
+    sf::Clock m_clock;
+
+    // What it does: An instance of our TextureManager.
+    // Why it's used: To load and retrieve textures for various game objects.
+    // How it works: Member variable, initialized in Game constructor.
+    TextureManager m_textureManager; // NEW: Texture manager instance
+
+    Player m_player;
+
+    // What it does: Sprite for the background.
+    // Why it's used: To display a static background image.
+    sf::Sprite m_backgroundSprite; // NEW: Background sprite
+
+    float m_backgroundColorValue;
+    bool m_colorIncreasing;
+    bool m_isPaused;
+
+    void processEvents();
+    void update(sf::Time deltaTime);
+    void render();
+
+    // What it does: Loads all necessary game assets at startup.
+    // Why it's used: Centralizes asset loading for easier management.
+    // How it works: Calls textureManager.loadTexture() for each asset.
+    void loadAssets(); // NEW: Helper function for asset loading
 };

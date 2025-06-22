@@ -6,7 +6,7 @@
 // Alternatives: None for SFML window creation. You'd use different headers for different libraries (e.g., GLFW, SDL).
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "Game.hpp"
+#include "Game/Game.hpp"
 
 int main()
 {

@@ -1,5 +1,5 @@
 // Source/Player/Player.hpp
-
+/*
 #pragma once
 
 #include <SFML/Graphics.hpp> // For sf::RectangleShape, sf::Sprite, sf::Texture, sf::RenderWindow, sf::Vector2f
@@ -55,5 +55,43 @@ private:
     // What it does: Handles reading player-specific input (e.g., keyboard presses).
     // Why it's used: Separates input processing logic from the general update logic.
     // How it works: Reads sf::Keyboard::isKeyPressed and sets m_velocity accordingly.
+    void handleInput();
+};
+*/
+
+
+// Source/Player/Player.hpp
+
+#pragma once
+
+#include <SFML/Graphics.hpp>
+#include <cmath>
+
+class Player
+{
+public:
+    // What it does: Constructor, now takes a texture reference for the sprite.
+    // Why it's used: To initialize the player with its visual texture.
+    // How it works: The Game class will pass a texture from its TextureManager.
+    // Alternatives: Player could load its own texture, but passing it is more flexible.
+    Player(sf::Vector2f startPosition, sf::Vector2f size, sf::Texture& texture);
+
+    void update(sf::Time deltaTime, sf::Vector2u windowSize);
+    void render(sf::RenderWindow& window);
+
+    sf::Vector2f getPosition() const;
+    sf::FloatRect getGlobalBounds() const;
+
+private:
+    // REMOVED: sf::RectangleShape m_shape;
+
+    // What it does: The visual representation of the player using an image.
+    // Why it's used: To display actual Mario graphics instead of a rectangle.
+    // How it works: An sf::Sprite object.
+    sf::Sprite m_sprite; // NEW: Replaced sf::RectangleShape
+
+    sf::Vector2f m_velocity;
+    float m_movementSpeed;
+
     void handleInput();
 };
