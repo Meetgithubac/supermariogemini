@@ -140,6 +140,7 @@ Game game;
 // What it does: Starts the main game loop.
 // Why it's used: Begins the continuous update and rendering of the game.
 // How it works: Calls the public run() method of our game object.
+
 game.run();
 
 // What it does: Indicates successful program termination.
@@ -147,4 +148,4 @@ game.run();
 return 0;
 }
 
-// session-4 finished
+// session-5 finished

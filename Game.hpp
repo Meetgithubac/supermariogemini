@@ -121,8 +121,12 @@ private:
 
 */
 
-// Source/Game/Game.hpp
 
+// session 5 started-------
+// 
+// 
+// Source/Game/Game.hpp
+/*
 #pragma once
 
 #include <SFML/Graphics.hpp>
@@ -168,4 +172,61 @@ private:
     // Why it's used: Centralizes asset loading for easier management.
     // How it works: Calls textureManager.loadTexture() for each asset.
     void loadAssets(); // NEW: Helper function for asset loading
+};
+*/
+// we have landed upto session5.
+
+
+
+
+// Source/Game/Game.hpp
+
+#pragma once
+
+#include <memory>
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <vector> // For std::vector
+#include "Player.hpp"
+#include "TextureManager.hpp"
+#include "Platform.hpp" // NEW: Include Platform header
+
+class Game
+{
+public:
+    Game();
+    ~Game();
+    void run();
+
+private:
+    sf::RenderWindow m_window;
+    sf::Clock m_clock;
+
+    TextureManager m_textureManager;
+
+    //Player m_player;
+    std::unique_ptr<Player> m_player;
+    //sf::Texture m_playerTexture;
+
+    //sf::Sprite m_backgroundSprite;
+    std::unique_ptr<sf::Sprite>  m_backgroundSprite;
+
+
+    // What it does: Stores all static platforms in the game.
+    // Why it's used: To manage multiple ground/platform objects for collision.
+    // How it works: A vector of pointers to Platform objects. Pointers avoid copying large objects.
+    std::vector<Platform*> m_platforms; // NEW: Vector of platforms
+
+    float m_backgroundColorValue;
+    bool m_colorIncreasing;
+    bool m_isPaused;
+
+    void processEvents();
+    void update(sf::Time deltaTime);
+    void render();
+
+    void loadAssets();
+    // What it does: Initializes all game entities (player, platforms, enemies, etc.).
+    // Why it's used: Central place to create and set up game objects.
+    void initGameObjects(); // NEW: Helper function to initialize game objects
 };

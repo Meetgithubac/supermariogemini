@@ -59,7 +59,7 @@ private:
 };
 */
 
-
+/*  session-5 starts-----------------------
 // Source/Player/Player.hpp
 
 #pragma once
@@ -95,4 +95,104 @@ private:
     float m_movementSpeed;
 
     void handleInput();
+};
+*/
+
+// we have landed upto session5.
+
+
+
+// session-6 starts here
+// Source/Player/Player.hpp
+/*
+#pragma once
+
+#include <SFML/Graphics.hpp>
+#include <cmath> // For std::sqrt
+
+class Player
+{
+public:
+    Player(sf::Vector2f startPosition, sf::Vector2f size, sf::Texture& texture);
+
+    // What it does: Overloaded update method. Now takes a vector of Platform pointers for collision.
+    // Why it's used: Player needs to know about platforms to check for collisions.
+    // How it works: Game will pass its vector of platforms.
+    void update(sf::Time deltaTime, sf::Vector2u windowSize, const std::vector<Platform*>& platforms); // Modified signature
+    void render(sf::RenderWindow& window);
+
+    sf::Vector2f getPosition() const;
+    sf::FloatRect getGlobalBounds() const;
+    void setPosition(sf::Vector2f newPos); // NEW: Allow external setting of position (useful for collision response)
+
+private:
+    sf::Sprite m_sprite;
+    sf::Vector2f m_velocity;
+    float m_movementSpeed;
+
+    // --- Animation Members ---
+    // What it does: Stores the current frame of the animation sequence.
+    // Why it's used: To know which part of the sprite sheet to display.
+    int m_currentFrame;
+    // What it does: Tracks time for animation frame advancement.
+    // Why it's used: Ensures animation plays at a consistent speed regardless of frame rate.
+    sf::Clock m_animationClock;
+    // What it does: Time duration each frame should be displayed.
+    // Why it's used: Controls the speed of the animation.
+    sf::Time m_timePerFrame;
+    // What it does: The width of a single animation frame on the sprite sheet.
+    // Why it's used: To calculate the x-coordinate for each frame in the sprite sheet.
+    int m_frameWidth;
+    // What it does: The height of a single animation frame on the sprite sheet.
+    // Why it's used: To calculate the y-coordinate for each frame.
+    int m_frameHeight;
+    // What it does: Total number of frames in the walking animation sequence.
+    // Why it's used: To loop the animation correctly.
+    int m_walkFramesCount;
+
+    void handleInput();
+    // What it does: Updates the player's animation frame.
+    // Why it's used: Controls which part of the sprite sheet is currently displayed.
+    // How it works: Increments m_currentFrame based on m_animationClock and m_timePerFrame.
+    void updateAnimation(); // NEW: For animation logic
+    // What it does: Handles collision response with platforms.
+    // Why it's used: To prevent player from moving through platforms.
+    // How it works: Checks intersection and adjusts player position.
+    void checkCollisions(const std::vector<Platform*>& platforms); // NEW: For collision logic
+};
+
+*/
+#pragma once
+
+#include <SFML/Graphics.hpp>
+#include <cmath>
+#include <vector>
+
+class Platform; // forward declaration
+
+class Player
+{
+public:
+    Player(const sf::Vector2f& startPosition, const sf::Vector2f& size, const sf::Texture& texture);
+
+    void update(sf::Time deltaTime, const sf::Vector2u& windowSize, const std::vector<Platform*>& platforms);
+    void render(sf::RenderTarget& target);
+
+    sf::Vector2f getPosition() const;
+    sf::FloatRect getGlobalBounds() const;
+    void setPosition(const sf::Vector2f& newPos);
+
+private:
+    sf::Sprite m_sprite;
+    sf::Vector2f m_velocity;
+    float m_movementSpeed{ 200.f };
+
+    int m_currentFrame{ 0 };
+    sf::Clock m_animationClock;
+    sf::Time m_timePerFrame{ sf::seconds(0.1f) };
+    int m_frameWidth{ 16 }, m_frameHeight{ 32 }, m_walkFramesCount{ 4 };
+
+    void handleInput();
+    void updateAnimation();
+    void checkCollisions(const std::vector<Platform*>& platforms);
 };

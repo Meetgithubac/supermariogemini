@@ -265,9 +265,9 @@ void Game::render()
 
 */
 
-
+//Session 5- started...
 // Source/Game/Game.cpp
-
+/*
 #include "Game.hpp" // Always include your own header first
 #include <memory>
 // What it does: Game class constructor implementation.
@@ -413,4 +413,201 @@ void Game::loadAssets()
     m_textureManager.loadTexture("background_sky", "assets/Textures/background_sky.png"); // Adjust path if needed
 
     // Can add more textures here as needed (e.g., coins, enemies, tiles)
+}
+*/
+
+// we have landed upto session5.
+
+
+// Source/Game/Game.cpp
+
+#include <memory>
+#include "Game.hpp"
+Game::Game()
+    : m_window(sf::VideoMode({ 800, 600 }), "Super Mario Clone - Session 6", sf::Style::Close | sf::Style::Resize),
+    //m_backgroundSprite()
+    m_backgroundColorValue(200.f),
+    m_colorIncreasing(false),
+    m_isPaused(false)
+{
+    m_window.setVerticalSyncEnabled(false);
+    m_window.setFramerateLimit(60);
+
+    loadAssets(); // Load textures first
+
+    sf::Vector2f playerStart = { 100.f, 300.f };
+    sf::Vector2f playerSize = { 32.f, 64.f };
+    m_player = std::make_unique<Player>(playerStart, playerSize, m_textureManager.getTexture("background_sky"));
+    //m_backgroundSprite = std::make_unique<sf::Sprite>("background_sky");
+    m_backgroundSprite = std::make_unique<sf::Sprite>(m_textureManager.getTexture("background_sky"));
+
+
+
+
+
+    // What it does: Initializes player and platforms after assets are loaded.
+    // Why it's used: Separates object creation from asset loading and constructor details.
+    initGameObjects(); // NEW: Call to initialize game objects
+}
+
+// What it does: Destructor for Game class.
+// Why it's used: To clean up dynamically allocated memory (our Platform objects).
+// How it works: Iterates through m_platforms and deletes each dynamically created Platform.
+Game::~Game()
+{
+    // What it does: Iterates through the vector and deletes each Platform object.
+    // Why it's used: Cleans up memory allocated with 'new' in initGameObjects().
+    for (Platform* platform : m_platforms)
+    {
+        delete platform; // Deallocate memory
+    }
+    // What it does: Clears the vector itself.
+    m_platforms.clear();
+}
+
+
+void Game::run()
+{
+    while (m_window.isOpen())
+    {
+        sf::Time deltaTime = m_clock.restart();
+        processEvents();
+        update(deltaTime);
+        render();
+    }
+}
+
+void Game::processEvents()
+{
+    while (std::optional event = m_window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>()) { m_window.close(); }
+        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+            sf::FloatRect visibleArea({ 0, 0 }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
+            m_window.setView(sf::View(visibleArea));
+            sf::Vector2u windowSize = m_window.getSize();
+            sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
+            m_backgroundSprite->setScale(
+                {       static_cast<float>(windowSize.x / bgTexSize.x),
+                static_cast<float>(windowSize.y / bgTexSize.y)
+        });
+        }
+        if (const auto key = event->getIf<sf::Event::KeyPressed>()) {
+            if (key->scancode== sf::Keyboard::Scancode::P) {
+                m_isPaused = !m_isPaused;
+                std::cout << "Game " << (m_isPaused ? "PAUSED" : "RESUMED") << std::endl;
+            }
+        }
+    }
+}
+
+void Game::update(sf::Time deltaTime)
+{
+    if (!m_isPaused)
+    {
+        // What it does: Calls player's update method, now passing the list of platforms.
+        // Why it's used: The player needs the platform information for collision checks.
+        // How it works: Passes the m_window.getSize() and the m_platforms vector.
+        m_player->update(deltaTime, m_window.getSize(), m_platforms); // Modified call
+
+        const float colorChangeSpeed = 50.f;
+        if (m_colorIncreasing) {
+            m_backgroundColorValue += colorChangeSpeed * deltaTime.asSeconds();
+        }
+        else {
+            m_backgroundColorValue -= colorChangeSpeed * deltaTime.asSeconds();
+        }
+        if (m_backgroundColorValue <= 0.f) {
+            m_backgroundColorValue = 0.f;
+            m_colorIncreasing = true;
+        }
+        else if (m_backgroundColorValue >= 200.f) {
+            m_backgroundColorValue = 200.f;
+            m_colorIncreasing = false;
+        }
+    }
+    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
+}
+
+void Game::render()
+{
+   /* m_window.clear(sf::Color(0, 0, (uint8_t)m_backgroundColorValue));
+
+    m_window.draw(m_backgroundSprite);*/
+
+
+
+
+    m_window.clear();       // changed
+
+    if (m_backgroundSprite) {
+        m_backgroundSprite->setPosition({ 0, 0 });
+        m_backgroundSprite->setScale({ 2.0f, 3.0f }); // Zoom to test
+        m_window.draw(*m_backgroundSprite);
+
+        std::cout << "DRwaing the backgroundimage";
+    }
+    else
+    {
+        std::cout << "Background sprite is null!" << std::endl;
+    }
+    // What it does: Draws the player sprite.
+    // Why it's used: Displays the player on top of the background.
+    if (m_player)
+        m_player->render(m_window);
+
+
+    m_window.display();
+
+
+    // What it does: Draws all platforms before the player.
+    // Why it's used: Ensures platforms are drawn underneath the player.
+    // How it works: Iterates through m_platforms and calls render() on each.
+    for (const auto& platform : m_platforms)
+    {
+        platform->render(m_window);
+    }
+
+    m_player->render(m_window);
+
+    m_window.display();
+}
+
+void Game::loadAssets()
+{
+    m_textureManager.loadTexture("player_texture", "assets/Textures/player_spritesheet.png");
+    m_textureManager.loadTexture("background_sky", "assets/Textures/background_sky.png");
+    m_textureManager.loadTexture("mariojump", "assets/Textures/mariojump1.png");
+    m_textureManager.loadTexture("mariorun", "assets/Textures/mariorun.png");
+    m_textureManager.loadTexture("mariowalk", "assets/Textures/mariowalk.png");
+    m_textureManager.loadTexture("marioright", "assets/Textures/marioright.png");
+
+}
+
+// What it does: Initializes game objects.
+// Why it's used: Centralizes the creation of initial game entities.
+void Game::initGameObjects()
+{
+   //m_player = Player::Player(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture"));
+
+
+    sf::Vector2f playerStart = { 100.f, 300.f };
+    sf::Vector2f playerSize = { 50.f, 50.f };
+    m_player = std::make_unique<Player>(playerStart, playerSize, m_textureManager.getTexture("player_texture"));
+
+    // What it does: Dynamically creates new Platform objects.
+    // Why it's used: To add solid ground for the player.
+    // How it works: Uses 'new' to allocate on the heap, and stores pointers in m_platforms.
+    //               These platforms will need to be deleted in the Game destructor.
+    m_platforms.push_back(new Platform(sf::Vector2f(0.f, 500.f), sf::Vector2f(800.f, 100.f))); // Ground platform
+    m_platforms.push_back(new Platform(sf::Vector2f(200.f, 350.f), sf::Vector2f(200.f, 30.f))); // Elevated platform
+    m_platforms.push_back(new Platform(sf::Vector2f(500.f, 250.f), sf::Vector2f(150.f, 30.f))); // Another platform
+
+    m_backgroundSprite->setTexture(m_textureManager.getTexture("background_sky"));
+    sf::Vector2u windowSize = m_window.getSize();
+    sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
+    m_backgroundSprite->setScale(
+        { static_cast<float>(windowSize.x / bgTexSize.x),
+        static_cast<float>(windowSize.y / bgTexSize.y)
+        });
 }
