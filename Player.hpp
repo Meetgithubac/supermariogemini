@@ -162,6 +162,9 @@ private:
 };
 
 */
+
+// session-6 starts here
+/*
 #pragma once
 
 #include <SFML/Graphics.hpp>
@@ -195,4 +198,69 @@ private:
     void handleInput();
     void updateAnimation();
     void checkCollisions(const std::vector<Platform*>& platforms);
+};
+*/
+
+// session-6 ends here.
+
+
+// Source/Player/Player.hpp
+
+#pragma once
+
+#include <SFML/Graphics.hpp>
+#include <vector> // Required for std::vector in checkCollisions
+#include <cmath>  // For std::sqrt
+
+// Forward declaration to avoid circular dependency if Platform needed Player header
+class Platform;
+
+class Player
+{
+public:
+    Player(sf::Vector2f startPosition, sf::Vector2f size, sf::Texture& texture);
+
+    void update(sf::Time deltaTime, sf::Vector2u windowSize, const std::vector<Platform*>& platforms);
+    void render(sf::RenderWindow& window);
+
+    sf::Vector2f getPosition() const;
+    sf::FloatRect getGlobalBounds() const;
+    void setPosition(sf::Vector2f newPos);
+
+private:
+    sf::Sprite m_sprite;
+    sf::Vector2f m_velocity;
+    float m_movementSpeed;
+
+    // --- Physics and Jump Members ---
+    // What it does: The acceleration due to gravity. Positive value pulls down.
+    // Why it's used: To simulate the effect of gravity on the player.
+    float m_gravity;
+    // What it does: The initial upward velocity given when jumping.
+    // Why it's used: Determines how high the player can jump.
+    float m_jumpStrength;
+    // What it does: Flag to check if the player is currently on a solid surface.
+    // Why it's used: To control when the player can jump (only from ground) and to stop gravity application when grounded.
+    bool m_onGround;
+
+    // --- Animation Members ---
+    int m_currentFrame;
+    sf::Clock m_animationClock;
+    sf::Time m_timePerFrame;
+    int m_frameWidth;
+    int m_frameHeight;
+    int m_walkFramesCount;
+
+    void handleInput();
+    void updateAnimation();
+    // What it does: Applies gravity to the player's vertical velocity.
+    // Why it's used: To simulate falling when in the air.
+    void applyGravity(sf::Time deltaTime); // NEW: Function to apply gravity
+    // What it does: Performs the jump action.
+    // Why it's used: Initiates an upward movement.
+    void jump(); // NEW: Function to handle jumping
+    // What it does: Refined collision detection and resolution for platforms.
+    // Why it's used: To correctly handle player interaction with solid ground/walls.
+    // How it works: Separates horizontal and vertical collision checks.
+    void checkCollisions(const std::vector<Platform*>& platforms, sf::Vector2f oldPosition); // Modified signature
 };

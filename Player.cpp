@@ -441,6 +441,8 @@ void Player::checkCollisions(const std::vector<Platform*>& platforms)
 */
 
 
+//  session-6 starts here--------------------
+/*
 
 #include "Player.hpp"
 #include "Platform.hpp"
@@ -548,6 +550,265 @@ void Player::checkCollisions(const std::vector<Platform*>& platforms)
                 if (m_velocity.y > 0) m_sprite.setPosition({ pBounds.position.x, lBounds.position.y- pBounds.size.y });
                 else if (m_velocity.y < 0) m_sprite.setPosition({ pBounds.position.x , lBounds.position.y+ lBounds.size.y });
                 m_velocity.y = 0;
+            }
+        }
+    }
+}
+*/
+
+// session -6 ends here.--------------------
+
+
+// Source/Player/Player.cpp
+
+#include "Player.hpp"
+#include "Platform.hpp" // Now needed here for Platform type
+#include <iostream>
+
+// What it does: Player constructor. Initializes physics variables.
+Player::Player(sf::Vector2f startPosition, sf::Vector2f size, sf::Texture& texture)
+    : m_sprite(texture),
+    m_velocity(0.f, 0.f),
+    m_movementSpeed(200.f),
+    m_gravity(500.f), // Gravitational acceleration (pixels/second^2)
+    m_jumpStrength(-350.f), // Initial jump velocity (negative because Y-axis is inverted for 'up')
+    m_onGround(false), // Player starts in the air (or assumes so until collision)
+    m_currentFrame(0),
+    m_timePerFrame(sf::seconds(0.1f)),
+    m_frameWidth(16),
+    m_frameHeight(32),
+    m_walkFramesCount(4)
+{
+    m_sprite.setTexture(texture);
+    m_sprite.setTextureRect(sf::IntRect({ 0, 0 }, { m_frameWidth, m_frameHeight }));
+
+    float scaleX = size.x / m_sprite.getGlobalBounds().size.x;
+    float scaleY = size.y / m_sprite.getGlobalBounds().size.y;
+    m_sprite.setScale({ scaleX, scaleY });
+    m_sprite.setPosition(startPosition);
+}
+
+void Player::setPosition(sf::Vector2f newPos)
+{
+    m_sprite.setPosition(newPos);
+}
+
+// What it does: Main update loop for the player, incorporating physics.
+// Why it's used: Advances player's state each frame.
+// How it works: Applies gravity, processes input, moves player, and checks collisions.
+void Player::update(sf::Time deltaTime, sf::Vector2u windowSize, const std::vector<Platform*>& platforms)
+{
+    sf::Vector2f oldPosition = m_sprite.getPosition(); // Store position before any movement
+
+    // What it does: Apply gravity only if the player is not on the ground.
+    // Why it's used: Prevents player from continuously accelerating downwards when grounded.
+    if (!m_onGround)
+    {
+        applyGravity(deltaTime);
+    }
+    // What it does: Reset horizontal velocity, vertical is handled by physics.
+    // Why it's used: Ensures player stops moving horizontally when keys are released.
+    m_velocity.x = 0.f; // Reset horizontal velocity each frame
+    handleInput();      // Update m_velocity based on current input
+
+    // --- Apply Movement (Separate X and Y application for better collision) ---
+    // Apply horizontal movement
+    m_sprite.move({ m_velocity.x * m_movementSpeed * deltaTime.asSeconds(), 0.f });
+    checkCollisions(platforms, oldPosition); // Check and resolve horizontal collisions
+
+    // Apply vertical movement
+    m_sprite.move({ 0.f, m_velocity.y * deltaTime.asSeconds() });
+    checkCollisions(platforms, oldPosition); // Check and resolve vertical collisions
+
+
+    // --- Boundary Checks (Still needed after movement and collision) ---
+    sf::Vector2f playerPos = m_sprite.getPosition();
+    sf::FloatRect playerBounds = m_sprite.getGlobalBounds(); // Use global bounds for accurate scaled size
+
+    if (playerPos.x < 0) { m_sprite.setPosition({ 0, playerPos.y }); m_velocity.x = 0; }
+    else if (playerPos.x + playerBounds.size.x > windowSize.x) { m_sprite.setPosition({ windowSize.x - playerBounds.size.x, playerPos.y }); m_velocity.x = 0; }
+
+    if (playerPos.y < 0) { m_sprite.setPosition({ playerPos.x, 0 }); m_velocity.y = 0; } // Ceiling collision
+    else if (playerPos.y + playerBounds.size.y > windowSize.y) { // Bottom of window (acting as a giant platform)
+        m_sprite.setPosition({ playerPos.x, windowSize.y - playerBounds.size.y });
+        m_velocity.y = 0; // Stop falling
+        m_onGround = true; // Mark as on ground
+    }
+    else // If not colliding with window bottom, assume not on ground
+    {
+        // IMPORTANT: Only set m_onGround to false here IF it's not set true by a platform collision.
+        // This is a subtle point. We assume not on ground, but a checkCollisions() might override this.
+        // A better approach is to reset m_onGround to false at the start of update(), and only set true during specific *bottom* collisions.
+    }
+
+
+    // --- Animation Update ---
+    // What it does: Update animation based on horizontal movement only.
+    // Why it's used: To ensure walking animation plays when moving left/right.
+    // How it works: If m_velocity.x is non-zero, call updateAnimation(), else reset to idle frame.
+    if (m_velocity.x != 0.f)
+    {
+        updateAnimation();
+    }
+    else // If not moving horizontally, reset to idle frame
+    {
+        m_currentFrame = 0; // Assuming frame 0 is idle
+        m_sprite.setTextureRect(sf::IntRect({ m_currentFrame * m_frameWidth, 0 }, { m_frameWidth, m_frameHeight }));
+    }
+}
+
+void Player::render(sf::RenderWindow& window)
+{
+    window.draw(m_sprite);
+}
+
+sf::Vector2f Player::getPosition() const
+{
+    return m_sprite.getPosition();
+}
+
+sf::FloatRect Player::getGlobalBounds() const
+{
+    return m_sprite.getGlobalBounds();
+}
+
+void Player::handleInput()
+{
+    // What it does: Sets horizontal velocity based on 'A' and 'D' keys.
+    // Why it's used: Controls left/right movement.
+    // How it works: Modifies m_velocity.x.
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A))
+    {
+        m_velocity.x = -1.f;
+        // Flip sprite for left movement
+        m_sprite.setScale({ -std::abs(m_sprite.getScale().x), m_sprite.getScale().y });
+        m_sprite.setOrigin({m_sprite.getGlobalBounds().size.x / m_sprite.getScale().x, 0.f}); // Adjust origin for scaling
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D))
+    {
+        m_velocity.x = 1.f;
+        // Reset scale and origin for right movement
+        m_sprite.setScale({ std::abs(m_sprite.getScale().x), m_sprite.getScale().y });
+        m_sprite.setOrigin({ 0.f, 0.f });
+    }
+    // REMOVED: Direct vertical control (W/S keys)
+
+    // What it does: Checks for jump input (Spacebar).
+    // Why it's used: To initiate a jump.
+    // How it works: Calls jump() if 'Space' is pressed and player is on ground.
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space))
+    {
+        jump();
+    }
+}
+
+// What it does: Applies gravitational force to the player's vertical velocity.
+// Why it's used: Simulates falling.
+void Player::applyGravity(sf::Time deltaTime)
+{
+    // What it does: Increases vertical velocity by gravity * deltaTime.
+    // Why it's used: Simulates constant acceleration.
+    m_velocity.y += m_gravity * deltaTime.asSeconds();
+
+    // Optional: Implement terminal velocity to cap max fall speed
+    // const float TERMINAL_VELOCITY = 500.f;
+    // if (m_velocity.y > TERMINAL_VELOCITY) {
+    //     m_velocity.y = TERMINAL_VELOCITY;
+    // }
+}
+
+// What it does: Makes the player jump.
+// Why it's used: Initiates an upward movement.
+// How it works: Sets vertical velocity to m_jumpStrength and sets m_onGround to false.
+void Player::jump()
+{
+    // What it does: Allows jump only if on ground.
+    // Why it's used: Prevents mid-air jumps.
+    if (m_onGround)
+    {
+        m_velocity.y = m_jumpStrength; // Set initial upward velocity
+        m_onGround = false; // Player is now in the air
+        // std::cout << "Jump!" << std::endl; // Debug
+    }
+}
+
+
+// What it does: Advances the animation frame based on time.
+void Player::updateAnimation()
+{
+    if (m_animationClock.getElapsedTime() >= m_timePerFrame)
+    {
+        m_currentFrame++;
+        if (m_currentFrame >= m_walkFramesCount)
+        {
+            m_currentFrame = 0;
+        }
+        // What it does: Updates the sprite's texture rectangle.
+        // How it works: x-offset based on m_currentFrame, y-offset is 0 for the first row of frames.
+        m_sprite.setTextureRect(sf::IntRect({ m_currentFrame * m_frameWidth , 0 }, { m_frameWidth, m_frameHeight }));
+        m_animationClock.restart();
+    }
+}
+
+// What it does: Checks for collisions with provided platforms and resolves them axis-by-axis.
+// Why it's used: To prevent player from passing through platforms.
+// How it works: Checks intersections for X and Y separately and adjusts position/velocity.
+void Player::checkCollisions(const std::vector<Platform*>& platforms, sf::Vector2f oldPosition)
+{
+    sf::FloatRect playerBounds = m_sprite.getGlobalBounds();
+    m_onGround = false; // Assume not on ground at start of collision check, set true if specific bottom collision occurs.
+
+    for (const auto& platform : platforms)
+    {
+        sf::FloatRect platformBounds = getGlobalBounds();
+        //sf::FloatRect platformBounds = sf::rect::getGlobalBounds(*platform);
+
+        if (playerBounds.findIntersection(platformBounds))
+        {
+            // std::cout << "Collision Detected!" << std::endl; // Debug
+
+            // Determine previous player position's bounds
+            sf::FloatRect oldPlayerBounds(oldPosition, sf::Vector2f(playerBounds.size.x, playerBounds.size.y));
+
+            // Collision from TOP (Player landing on platform)
+            // What it does: Checks if player was above platform and is now intersecting from top.
+            // Why it's used: To land on platforms.
+            // How it works: oldPlayerBounds.top + height was above platform.top, current is below.
+            if (oldPlayerBounds.position.y + oldPlayerBounds.size.y <= platformBounds.position.y && m_velocity.y > 0)
+            {
+                m_sprite.setPosition({ playerBounds.position.x, platformBounds.position.y - playerBounds.size.y }); // Place on top
+                m_velocity.y = 0; // Stop vertical movement
+                m_onGround = true; // Player is now on the ground
+            }
+            // Collision from BOTTOM (Player hitting head on platform from below)
+            // What it does: Checks if player was below platform and is now intersecting from bottom.
+            // Why it's used: To stop player from passing through platforms when jumping.
+            // How it works: oldPlayerBounds.top was below platform.top+height, current is above.
+            else if (oldPlayerBounds.position.y >= platformBounds.position.y + platformBounds.size.y && m_velocity.y < 0)
+            {
+                m_sprite.setPosition({ playerBounds.position.x, platformBounds.position.y + platformBounds.size.y }); // Place below
+                m_velocity.y = 0; // Stop vertical movement
+            }
+            // Collision from LEFT/RIGHT (Side collision)
+            // What it does: Checks for horizontal collision if not a vertical one.
+            // Why it's used: To stop horizontal movement against walls.
+            // How it works: oldPlayerBounds.left was to the left/right, now intersecting.
+            else
+            {
+                // If the player's previous right edge was less than or equal to the platform's left edge,
+                // and player is moving right, it's a collision from left.
+                if (oldPlayerBounds.position.x + oldPlayerBounds.size.x <= platformBounds.position.x && m_velocity.x > 0)
+                {
+                    m_sprite.setPosition({ platformBounds.position.x - playerBounds.size.x, playerBounds.position.y }); // Push back left
+                    m_velocity.x = 0; // Stop horizontal movement
+                }
+                // If the player's previous left edge was greater than or equal to the platform's right edge,
+                // and player is moving left, it's a collision from right.
+                else if (oldPlayerBounds.position.x >= platformBounds.position.x + platformBounds.size.x && m_velocity.x < 0)
+                {
+                    m_sprite.setPosition({ platformBounds.position.x + platformBounds.size.x, playerBounds.position.y }); // Push back right
+                    m_velocity.x = 0; // Stop horizontal movement
+                }
             }
         }
     }

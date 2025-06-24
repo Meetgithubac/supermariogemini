@@ -503,6 +503,9 @@ void Game::processEvents()
 
 void Game::update(sf::Time deltaTime)
 {
+   
+    // session 6 
+    /*
     if (!m_isPaused)
     {
         // What it does: Calls player's update method, now passing the list of platforms.
@@ -527,6 +530,34 @@ void Game::update(sf::Time deltaTime)
         }
     }
     std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
+
+    */
+
+    if (!m_isPaused)
+    {
+        // What it does: Calls player's update method, now passing the list of platforms.
+        // Why it's used: The player needs the platform information for collision checks.
+        m_player->update(deltaTime, m_window.getSize(), m_platforms); // Updated call signature
+
+        // ... background color change logic ...
+        const float colorChangeSpeed = 50.f;
+        if (m_colorIncreasing) {
+            m_backgroundColorValue += colorChangeSpeed * deltaTime.asSeconds();
+        }
+        else {
+            m_backgroundColorValue -= colorChangeSpeed * deltaTime.asSeconds();
+        }
+        if (m_backgroundColorValue <= 0.f) {
+            m_backgroundColorValue = 0.f;
+            m_colorIncreasing = true;
+        }
+        else if (m_backgroundColorValue >= 200.f) {
+            m_backgroundColorValue = 200.f;
+            m_colorIncreasing = false;
+        }
+    }
+    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
+
 }
 
 void Game::render()
