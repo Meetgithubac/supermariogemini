@@ -1,183 +1,74 @@
-//#include "Game.hpp"
-// Source/Game/Game.cpp
+#include "Game.hpp"
+#include <algorithm>
+#include "TileMap.hpp"
+#include "Player.hpp"
+#include "Goomba.hpp"
+#include "Coin.hpp"
+#include "QuestionBlock.hpp"
+#include "BrickBlock.hpp"
+#include "Camera.hpp"
+#include "TextureManager.hpp"
+#include <SFML/Graphics/Text.hpp> // Or just SFML/Graphics.hpp covers it
+#include <iomanip>
+#include <sstream>
+#include <memory>
 
+const int TILE_SIZE = 32;
+const int MAP_COLS = 50;
+const int MAP_ROWS = 10;
 
-/*
-// What it does: Includes the Game class declaration.
-// Why it's used: Every .cpp file that implements a class must include its own .hpp file first.
-// How it works: Brings the declarations from Game.hpp into this source file.
-#include "Game.hpp" // Note: Use quotes for local includes, angle brackets for system/library includes.
-
-// What it does: Constructor implementation for the Game class.
-// Why it's used: Initializes member variables when a Game object is created.
-// How it works: Uses an initializer list for member variables (more efficient than assignment in constructor body).
-//               Sets up the window, player shape, and speed.
-Game::Game()
-    : m_window(sf::VideoMode({ 800, 600 }), "Super Mario Clone - Session 3", sf::Style::Close | sf::Style::Resize), // Initialize m_window
-    m_player(sf::Vector2f(50.f, 50.f)), // Initialize m_player size
-    m_playerSpeed(200.f) // Initialize m_playerSpeed
-{
-    // What it does: Disable vertical synchronization.
-    // Why it's used: Allows us to control framerate precisely with setFramerateLimit and rely on delta time.
-    // How it works: Calls a method on the m_window object.
-    m_window.setVerticalSyncEnabled(false);
-    // What it does: Sets the maximum frame rate for the window.
-    // Why it's used: To prevent excessive CPU usage and manage rendering speed.
-    // How it works: Calls a method on the m_window object.
-    m_window.setFramerateLimit(60);
-
-    // What it does: Sets the initial color of the player.
-    // Why it's used: To make the player visible.
-    // How it works: Calls setFillColor() on the m_player object.
-    m_player.setFillColor(sf::Color::Green);
-    // What it does: Sets the initial position of the player.
-    // Why it's used: Places the player at a starting point on the screen.
-    // How it works: Calls setPosition() on the m_player object.
-    m_player.setPosition({100.f, 100.f});
-
-    // m_clock doesn't need explicit initialization here; its default constructor is fine.
-}
-
-// What it does: Implements the main game loop.
-// Why it's used: This function is called to start the game's execution.
-// How it works: Contains the while loop that repeatedly calls processEvents(), update(), and render().
-void Game::run()
-{
-    // What it does: Runs as long as the window is open.
-    // Why it's used: The core of the game's execution.
-    while (m_window.isOpen())
-    {
-        // What it does: Measures the time elapsed since the last frame and restarts the clock.
-        // Why it's used: To obtain delta time for frame-rate independent updates.
-        sf::Time deltaTime = m_clock.restart();
-
-        // What it does: Handles all window and input events.
-        // Why it's used: Keeps the game responsive to user input and system events.
-        // How it works: Calls the private member function processEvents().
-        processEvents();
-        // What it does: Updates the game state based on delta time.
-        // Why it's used: Moves game objects, performs physics, handles AI, etc.
-        // How it works: Calls the private member function update(), passing deltaTime.
-        update(deltaTime);
-        // What it does: Draws all game objects to the screen.
-        // Why it's used: Renders the current game state to the user.
-        // How it works: Calls the private member function render().
-        render();
-    }
-}
-
-// What it does: Implements the event processing logic.
-// Why it's used: To separate event handling from the main loop.
-// How it works: Polls SFML events and reacts to them (e.g., window close, resize).
-void Game::processEvents()
-{
-    // What it does: Loops through all pending events.
-    // Why it's used: Ensures all events (e.g., multiple key presses, clicks) are processed in one frame.
-    while (std::optional event = m_window.pollEvent())
-    {
-        if (event->is< sf::Event::Closed>())
-        {
-            m_window.close();
-        }
-        if (const auto* resized = event->getIf<sf::Event::Resized>())
-        {
-            // What it does: Adjusts the window's view when resized to prevent distortion.
-            // Why it's used: Maintains the correct aspect ratio and scaling of game content.
-            // How it works: Creates a new sf::View and applies it to the window.
-            sf::FloatRect visibleArea({0, 0}, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
-            m_window.setView(sf::View(visibleArea));
-        }
-    }
-}
-
-// What it does: Implements the game state update logic.
-// Why it's used: To change the positions, states, and behaviors of game objects.
-// How it works: Takes deltaTime to ensure movement is frame-rate independent.
-void Game::update(sf::Time deltaTime)
-{
-    // --- Player Movement (from Session 2, now inside Game::update) ---
-    sf::Vector2f movement(0.f, 0.f);
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A))
-    {
-        movement.x -= 1.f;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D))
-    {
-        movement.x += 1.f;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W))
-    {
-        movement.y -= 1.f;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S))
-    {
-        movement.y += 1.f;
-    }
-
-    if (movement.x != 0.f || movement.y != 0.f)
-    {
-        float length = std::sqrt(movement.x * movement.x + movement.y * movement.y);
-        if (length > 0.f)
-        {
-            movement.x /= length;
-            movement.y /= length;
-        }
-    }
-    // What it does: Moves the player object.
-    // Why it's used: Applies the calculated movement based on input and delta time.
-    // How it works: Calls the move() method of the m_player sf::RectangleShape.
-    m_player.move(movement * m_playerSpeed * deltaTime.asSeconds());
-
-    // What it does: Prints the delta time for debugging purposes.
-    // Why it's used: To observe frame timing and confirm delta time is working.
-    // How it works: Accesses deltaTime's asMilliseconds() method.
-    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
-}
-
-// What it does: Implements the rendering logic.
-// Why it's used: To draw all game objects to the screen.
-// How it works: Clears the window, draws objects, and displays the frame.
-void Game::render()
-{
-    // What it does: Clears the window with a specific color.
-    // Why it's used: Prepares the window for drawing the new frame.
-    // How it works: Calls clear() on the m_window object.
-    m_window.clear(sf::Color(0, 100, 200));
-
-    // What it does: Draws the player rectangle to the window.
-    // Why it's used: Makes the player visible on screen.
-    // How it works: Calls draw() on the m_window object, passing the drawable m_player.
-    m_window.draw(m_player);
-
-    // What it does: Presents the drawn frame to the user.
-    // Why it's used: Updates the visual display.
-    // How it works: Calls display() on the m_window object.
-    m_window.display();
-}
-
-*/
-
-
-// updated one
-
-// Source/Game/Game.cpp
-/*
-#include "Game.hpp" // Always include your own header first
+std::vector<std::vector<int>> level = {
+   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
 
 Game::Game()
-    : m_window(sf::VideoMode({ 800, 600 }), "Super Mario Clone - Session 4", sf::Style::Close | sf::Style::Resize),
-    m_player(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f)), // NEW: Initialize player with start position and size
+    : m_window(sf::VideoMode({ 800, 600 }), "Super Mario Clone - Session 14", sf::Style::Close | sf::Style::Resize),
+    m_levelWidth(static_cast<float>(MAP_COLS* TILE_SIZE)),
+    m_levelHeight(static_cast<float>(MAP_ROWS* TILE_SIZE)),
+    m_camera(sf::Vector2f(800, 600), m_levelWidth, m_levelHeight),
     m_backgroundColorValue(200.f),
     m_colorIncreasing(false),
-    m_isPaused(false)
+    m_isPaused(false),
+    m_tilemap(m_textureManager.getTexture("tileset_texture")),
+    m_player(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture")), // Initialize m_player here
+    m_scoreText(m_font),
+    m_score(0)
 {
     m_window.setVerticalSyncEnabled(false);
     m_window.setFramerateLimit(60);
 
-    // REMOVED: m_player.setFillColor(sf::Color::Green);
-    // REMOVED: m_player.setPosition(100.f, 100.f);
-    // REMOVED: m_playerSpeed(200.f); // This is now inside Player class
+    ////m_scoreText.setFont(m_font);
+    //m_scoreText.setString("Score: 0");
+    //m_scoreText.setCharacterSize(24);
+    //m_scoreText.setFillColor(sf::Color::White);
+    //m_scoreText.setPosition({10.f, 10.f});
+    ////m_scoreText. ;
+
+    loadAssets();
+    initGameObjects();
+}
+
+Game::~Game()
+{
 }
 
 void Game::run()
@@ -185,7 +76,6 @@ void Game::run()
     while (m_window.isOpen())
     {
         sf::Time deltaTime = m_clock.restart();
-
         processEvents();
         update(deltaTime);
         render();
@@ -200,20 +90,11 @@ void Game::processEvents()
         {
             m_window.close();
         }
-        if (const auto* resized = event->getIf<sf::Event::Resized>())
-        {
-
-            std::cout << "new width: " << resized->size.x << std::endl;
-            std::cout << "new height: " << resized->size.y << std::endl;
-            sf::FloatRect visibleArea({ 0, 0 }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
-            m_window.setView(sf::View(visibleArea));
-        }
         if (const auto key = event->getIf<sf::Event::KeyPressed>())
         {
             if (key->scancode == sf::Keyboard::Scancode::P)
             {
                 m_isPaused = !m_isPaused;
-                std::cout << "Game " << (m_isPaused ? "PAUSED" : "RESUMED") << std::endl;
             }
         }
     }
@@ -223,12 +104,46 @@ void Game::update(sf::Time deltaTime)
 {
     if (!m_isPaused)
     {
-        // What it does: Calls the update method of our Player object.
-        // Why it's used: Delegates the player's internal logic updates to the Player class itself.
-        // How it works: Passes the deltaTime so the Player can perform frame-rate independent movement.
-        m_player.update(deltaTime); // NEW: Delegate update to Player
+        m_player.update(deltaTime, m_window.getSize(), m_tilemap);
+        m_camera.update(m_player.getPosition());
 
-        // ... (Background color change logic remains here as it's game-level) ...
+        for (const auto& enemy : m_enemies)
+        {
+            enemy->update(deltaTime, m_tilemap);
+            enemy->checkPlayerCollision(m_player);
+        }
+
+        m_enemies.erase(std::remove_if(m_enemies.begin(), m_enemies.end(),
+            [](const std::unique_ptr<Enemy>& enemy) {
+                return !enemy->isAlive();
+            }),
+            m_enemies.end());
+
+        for (const auto& coin : m_coins)
+        {
+            coin->update(deltaTime);
+            coin->checkPlayerCollision(m_player, m_score);
+        }
+
+        m_coins.erase(std::remove_if(m_coins.begin(), m_coins.end(),
+            [](const std::unique_ptr<Coin>& coin) {
+                return !coin->isActive();
+            }),
+            m_coins.end());
+
+        for (const auto& block : m_blocks)
+        {
+            block->update(deltaTime);
+            block->checkPlayerCollision(m_player, m_coins, m_score);
+        }
+
+        m_blocks.erase(std::remove_if(m_blocks.begin(), m_blocks.end(),
+            [](const std::unique_ptr<Block>& block) {
+                BrickBlock* brick = dynamic_cast<BrickBlock*>(block.get());
+                return (brick != nullptr && brick->isBroken());
+            }),
+            m_blocks.end());
+
         const float colorChangeSpeed = 50.f;
         if (m_colorIncreasing) {
             m_backgroundColorValue += colorChangeSpeed * deltaTime.asSeconds();
@@ -244,401 +159,145 @@ void Game::update(sf::Time deltaTime)
             m_backgroundColorValue = 200.f;
             m_colorIncreasing = false;
         }
-    }
 
-    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
+        std::stringstream ss;
+        ss << "SCORE: " << std::setw(6) << std::setfill('0') << m_score;
+        m_scoreText.setString(ss.str());
+    }
 }
 
 void Game::render()
 {
-    //m_window.clear(sf::Color(0, 0, (sf::Uint8)m_backgroundColorValue));
     m_window.clear(sf::Color(0, 0, static_cast<uint8_t>(m_backgroundColorValue)));
 
+    m_camera.applyTo(m_window);
 
-    // What it does: Calls the render method of our Player object.
-    // Why it's used: Delegates the player's drawing responsibility to the Player class.
-    // How it works: Passes the window by reference so the Player can draw itself onto it.
-    m_player.render(m_window); // NEW: Delegate render to Player
+    renderBackgroundLayers();
 
-    m_window.display();
-}
+    m_window.draw(m_tilemap);
 
-*/
-
-//Session 5- started...
-// Source/Game/Game.cpp
-/*
-#include "Game.hpp" // Always include your own header first
-#include <memory>
-// What it does: Game class constructor implementation.
-// Why it's used: Initializes game window, texture manager, player, and loads assets.
-Game::Game()
-    : m_window(sf::VideoMode({ 800, 600 }), "Super Mario Clone - Session 5", sf::Style::Close | sf::Style::Resize),
-    // REMOVED: Initializing m_player directly here. Player now needs a texture.
-    m_backgroundColorValue(200.f),
-    m_colorIncreasing(false),
-    m_isPaused(false)
-{
-    m_window.setVerticalSyncEnabled(false);
-    m_window.setFramerateLimit(60);
-
-    // What it does: Calls the helper function to load all game assets.
-    // Why it's used: Separates asset loading logic from constructor for clarity.
-    loadAssets(); // NEW: Call to load assets
-
-    // What it does: Initializes the player *after* textures are loaded.
-    // Why it's used: The Player constructor now requires a loaded texture.
-    // How it works: Passes the texture retrieved from m_textureManager.
-    //m_backgroundSprite.setTexture(m_textureManager.getTexture("background_sky")); // NEW: Set background texture
-    m_player = std::make_unique<Player>(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture")); // NEW: Initialize player with its texture
-
-    m_backgroundSprite.emplace(m_textureManager.getTexture("background_sky")); // 
-    m_backgroundSprite->setPosition({ 0.f, 0.f });
-
-    // What it does: Sets the background sprite's texture.
-    // Why it's used: To display the loaded background image.
-    // How it works: Gets the texture from m_textureManager and assigns it to m_backgroundSprite.
-    // What it does: Scales the background sprite to fit the window.
-    // Why it's used: Ensures the background image covers the entire window regardless of its original resolution.
-    // How it works: Calculates scale factors based on window size and sprite texture size.
-    sf::Vector2u windowSize = m_window.getSize();
-    sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
-    m_backgroundSprite->setScale(
-        { static_cast<float>(windowSize.x / bgTexSize.x),
-         static_cast<float>(windowSize.y / bgTexSize.y)
-        });
-}
-
-void Game::run()
-{
-    while (m_window.isOpen())
+    for (const auto& enemy : m_enemies)
     {
-        sf::Time deltaTime = m_clock.restart();
-        processEvents();
-        update(deltaTime);
-        render();
+        enemy->render(m_window);
     }
-}
 
-void Game::processEvents()
-{
-    while (std::optional event = m_window.pollEvent())
+    for (const auto& coin : m_coins)
     {
-        if (event->is<sf::Event::Closed>()) { m_window.close(); }
-        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-            sf::FloatRect visibleArea({ 0, 0 }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
-            m_window.setView(sf::View(visibleArea));
-        };
-            // NEW: Rescale background when window resizes
-            sf::Vector2u windowSize = m_window.getSize();
-            sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
-            m_backgroundSprite->setScale(
-                { static_cast<float>(windowSize.x / bgTexSize.x),
-                 static_cast<float>(windowSize.y / bgTexSize.y) }
-            );
-        if (const auto key = event->getIf<sf::Event::KeyPressed>()) {
-            if (key->scancode == sf::Keyboard::Scancode::P) {
-                m_isPaused = !m_isPaused;
-                std::cout << "Game " << (m_isPaused ? "PAUSED" : "RESUMED") << std::endl;
-            }
-        }
+        coin->render(m_window);
     }
-}
 
-void Game::update(sf::Time deltaTime)
-{
-   if (!m_isPaused)
+    for (const auto& block : m_blocks)
     {
-        // What it does: Calls player's update method, passing window size for boundary checks.
-        // Why it's used: Delegates player logic to the Player class.
-        if (m_player)
-            m_player->update(deltaTime, m_window.getSize());
-
-        const float colorChangeSpeed = 50.f;
-        if (m_colorIncreasing) {
-            m_backgroundColorValue += colorChangeSpeed * deltaTime.asSeconds();
-        }
-        else {
-            m_backgroundColorValue -= colorChangeSpeed * deltaTime.asSeconds();
-        }
-        if (m_backgroundColorValue <= 0.f) {
-            m_backgroundColorValue = 0.f;
-            m_colorIncreasing = true;
-        }
-        else if (m_backgroundColorValue >= 200.f) {
-            m_backgroundColorValue = 200.f;
-            m_colorIncreasing = false;
-        }
-    }
-    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
-
-}
-void Game::render()
-{
-    // What it does: Clears the window.
-    // Why it's used: Prepares the screen for drawing.
-    m_window.clear();       // changed
-
-     if (m_backgroundSprite) {
-         m_backgroundSprite->setPosition({ 0, 0 });
-         m_backgroundSprite->setScale({ 2.0f, 3.0f }); // Zoom to test
-         m_window.draw(*m_backgroundSprite);
-         
-        std::cout << "DRwaing the backgroundimage";
-     }
-     else
-     {
-         std::cout << "Background sprite is null!" << std::endl;
-     }
-    // What it does: Draws the player sprite.
-    // Why it's used: Displays the player on top of the background.
-    if (m_player)
-        m_player->render(m_window);
-
-
-    m_window.display();
-}
-
-// What it does: Implements the asset loading logic.
-// Why it's used: Central place to load all textures needed for the game.
-// How it works: Calls m_textureManager.loadTexture() for each asset.
-void Game::loadAssets()
-{
-    // What it does: Loads the player's sprite sheet.
-    // Why it's used: Provides the image data for the player's sprite.
-    // How it works: Uses a unique ID "player_texture" and the path to the PNG file.
-    m_textureManager.loadTexture("player_texture", "assets/Textures/player_spritesheet.png"); // Adjust path if needed
-    // What it does: Loads the background sky texture.
-    // Why it's used: Provides the image data for the game's background.
-    m_textureManager.loadTexture("background_sky", "assets/Textures/background_sky.png"); // Adjust path if needed
-
-    // Can add more textures here as needed (e.g., coins, enemies, tiles)
-}
-*/
-
-// we have landed upto session5.
-
-
-// Source/Game/Game.cpp
-
-#include <memory>
-#include "Game.hpp"
-Game::Game()
-    : m_window(sf::VideoMode({ 800, 600 }), "Super Mario Clone - Session 6", sf::Style::Close | sf::Style::Resize),
-    //m_backgroundSprite()
-    m_backgroundColorValue(200.f),
-    m_colorIncreasing(false),
-    m_isPaused(false)
-{
-    m_window.setVerticalSyncEnabled(false);
-    m_window.setFramerateLimit(60);
-
-    loadAssets(); // Load textures first
-
-    sf::Vector2f playerStart = { 100.f, 300.f };
-    sf::Vector2f playerSize = { 32.f, 64.f };
-    m_player = std::make_unique<Player>(playerStart, playerSize, m_textureManager.getTexture("background_sky"));
-    //m_backgroundSprite = std::make_unique<sf::Sprite>("background_sky");
-    m_backgroundSprite = std::make_unique<sf::Sprite>(m_textureManager.getTexture("background_sky"));
-
-
-
-
-
-    // What it does: Initializes player and platforms after assets are loaded.
-    // Why it's used: Separates object creation from asset loading and constructor details.
-    initGameObjects(); // NEW: Call to initialize game objects
-}
-
-// What it does: Destructor for Game class.
-// Why it's used: To clean up dynamically allocated memory (our Platform objects).
-// How it works: Iterates through m_platforms and deletes each dynamically created Platform.
-Game::~Game()
-{
-    // What it does: Iterates through the vector and deletes each Platform object.
-    // Why it's used: Cleans up memory allocated with 'new' in initGameObjects().
-    for (Platform* platform : m_platforms)
-    {
-        delete platform; // Deallocate memory
-    }
-    // What it does: Clears the vector itself.
-    m_platforms.clear();
-}
-
-
-void Game::run()
-{
-    while (m_window.isOpen())
-    {
-        sf::Time deltaTime = m_clock.restart();
-        processEvents();
-        update(deltaTime);
-        render();
-    }
-}
-
-void Game::processEvents()
-{
-    while (std::optional event = m_window.pollEvent())
-    {
-        if (event->is<sf::Event::Closed>()) { m_window.close(); }
-        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-            sf::FloatRect visibleArea({ 0, 0 }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
-            m_window.setView(sf::View(visibleArea));
-            sf::Vector2u windowSize = m_window.getSize();
-            sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
-            m_backgroundSprite->setScale(
-                {       static_cast<float>(windowSize.x / bgTexSize.x),
-                static_cast<float>(windowSize.y / bgTexSize.y)
-        });
-        }
-        if (const auto key = event->getIf<sf::Event::KeyPressed>()) {
-            if (key->scancode== sf::Keyboard::Scancode::P) {
-                m_isPaused = !m_isPaused;
-                std::cout << "Game " << (m_isPaused ? "PAUSED" : "RESUMED") << std::endl;
-            }
-        }
-    }
-}
-
-void Game::update(sf::Time deltaTime)
-{
-   
-    // session 6 
-    /*
-    if (!m_isPaused)
-    {
-        // What it does: Calls player's update method, now passing the list of platforms.
-        // Why it's used: The player needs the platform information for collision checks.
-        // How it works: Passes the m_window.getSize() and the m_platforms vector.
-        m_player->update(deltaTime, m_window.getSize(), m_platforms); // Modified call
-
-        const float colorChangeSpeed = 50.f;
-        if (m_colorIncreasing) {
-            m_backgroundColorValue += colorChangeSpeed * deltaTime.asSeconds();
-        }
-        else {
-            m_backgroundColorValue -= colorChangeSpeed * deltaTime.asSeconds();
-        }
-        if (m_backgroundColorValue <= 0.f) {
-            m_backgroundColorValue = 0.f;
-            m_colorIncreasing = true;
-        }
-        else if (m_backgroundColorValue >= 200.f) {
-            m_backgroundColorValue = 200.f;
-            m_colorIncreasing = false;
-        }
-    }
-    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
-
-    */
-
-    if (!m_isPaused)
-    {
-        // What it does: Calls player's update method, now passing the list of platforms.
-        // Why it's used: The player needs the platform information for collision checks.
-        m_player->update(deltaTime, m_window.getSize(), m_platforms); // Updated call signature
-
-        // ... background color change logic ...
-        const float colorChangeSpeed = 50.f;
-        if (m_colorIncreasing) {
-            m_backgroundColorValue += colorChangeSpeed * deltaTime.asSeconds();
-        }
-        else {
-            m_backgroundColorValue -= colorChangeSpeed * deltaTime.asSeconds();
-        }
-        if (m_backgroundColorValue <= 0.f) {
-            m_backgroundColorValue = 0.f;
-            m_colorIncreasing = true;
-        }
-        else if (m_backgroundColorValue >= 200.f) {
-            m_backgroundColorValue = 200.f;
-            m_colorIncreasing = false;
-        }
-    }
-    std::cout << "Delta Time (ms): " << deltaTime.asMilliseconds() << std::endl;
-
-}
-
-void Game::render()
-{
-   /* m_window.clear(sf::Color(0, 0, (uint8_t)m_backgroundColorValue));
-
-    m_window.draw(m_backgroundSprite);*/
-
-
-
-
-    m_window.clear();       // changed
-
-    if (m_backgroundSprite) {
-        m_backgroundSprite->setPosition({ 0, 0 });
-        m_backgroundSprite->setScale({ 2.0f, 3.0f }); // Zoom to test
-        m_window.draw(*m_backgroundSprite);
-
-        std::cout << "DRwaing the backgroundimage";
-    }
-    else
-    {
-        std::cout << "Background sprite is null!" << std::endl;
-    }
-    // What it does: Draws the player sprite.
-    // Why it's used: Displays the player on top of the background.
-    if (m_player)
-        m_player->render(m_window);
-
-
-    m_window.display();
-
-
-    // What it does: Draws all platforms before the player.
-    // Why it's used: Ensures platforms are drawn underneath the player.
-    // How it works: Iterates through m_platforms and calls render() on each.
-    for (const auto& platform : m_platforms)
-    {
-        platform->render(m_window);
+        block->render(m_window);
     }
 
-    m_player->render(m_window);
+    m_player.render(m_window);
+
+    renderHUD();
 
     m_window.display();
 }
 
 void Game::loadAssets()
 {
-    m_textureManager.loadTexture("player_texture", "assets/Textures/player_spritesheet.png");
-    m_textureManager.loadTexture("background_sky", "assets/Textures/background_sky.png");
-    m_textureManager.loadTexture("mariojump", "assets/Textures/mariojump1.png");
-    m_textureManager.loadTexture("mariorun", "assets/Textures/mariorun.png");
-    m_textureManager.loadTexture("mariowalk", "assets/Textures/mariowalk.png");
-    m_textureManager.loadTexture("marioright", "assets/Textures/marioright.png");
+    m_textureManager.loadTexture("player_texture", "Assets/Textures/player_spritesheet.png");
+    m_textureManager.loadTexture("background_sky", "Assets/Textures/background_sky.png");
+    m_textureManager.loadTexture("background_clouds", "Assets/Textures/background_clouds.png");
+    m_textureManager.loadTexture("background_mountains", "Assets/Textures/background_mountains.png");
+    m_textureManager.loadTexture("tileset_texture", "Assets/Textures/tileset.png");
+    m_textureManager.loadTexture("goomba_texture", "Assets/Textures/goomba_spritesheet.png");
+    m_textureManager.loadTexture("coin_texture", "Assets/Textures/coin_spritesheet.png");
 
+    m_textureManager.loadTexture("question_block_active_texture", "Assets/Textures/question_block_spritesheet.png");
+    m_textureManager.loadTexture("question_block_empty_texture", "Assets/Textures/empty_block_texture.png");
+    m_textureManager.loadTexture("brick_block_texture", "Assets/Textures/brick_block_texture.png");
+
+    if (!m_font.openFromFile("Assets/Fonts/SuperMarioBros-3.ttf"))
+    {
+        std::cerr << "Error loading font: Assets/Fonts/SuperMarioBros-3.ttf" << std::endl;
+    }
 }
 
-// What it does: Initializes game objects.
-// Why it's used: Centralizes the creation of initial game entities.
 void Game::initGameObjects()
 {
-   //m_player = Player::Player(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture"));
+    m_tilemap.load(level, MAP_COLS, MAP_ROWS);
+    //m_player = Player(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture"));
+    m_player.setTextureManager(&m_textureManager);
+
+    m_enemies.push_back(std::make_unique<Goomba>(sf::Vector2f(200.f, 400.f), sf::Vector2f(32.f, 32.f), m_textureManager.getTexture("goomba_texture")));
+    m_enemies.push_back(std::make_unique<Goomba>(sf::Vector2f(600.f, 400.f), sf::Vector2f(32.f, 32.f), m_textureManager.getTexture("goomba_texture")));
+    m_enemies.push_back(std::make_unique<Goomba>(sf::Vector2f(800.f, 400.f), sf::Vector2f(32.f, 32.f), m_textureManager.getTexture("goomba_texture")));
+
+    m_coins.push_back(std::make_unique<Coin>(sf::Vector2f(250.f, 450.f), sf::Vector2f(24.f, 24.f), m_textureManager.getTexture("coin_texture"), 100));
+    m_coins.push_back(std::make_unique<Coin>(sf::Vector2f(280.f, 450.f), sf::Vector2f(24.f, 24.f), m_textureManager.getTexture("coin_texture"), 100));
+    m_coins.push_back(std::make_unique<Coin>(sf::Vector2f(310.f, 450.f), sf::Vector2f(24.f, 24.f), m_textureManager.getTexture("coin_texture"), 100));
+    m_coins.push_back(std::make_unique<Coin>(sf::Vector2f(700.f, 400.f), sf::Vector2f(24.f, 24.f), m_textureManager.getTexture("coin_texture"), 100));
+
+    m_blocks.push_back(std::make_unique<QuestionBlock>(
+        sf::Vector2f(300.f, 200.f), sf::Vector2f(32.f, 32.f),
+        m_textureManager.getTexture("question_block_active_texture"),
+        m_textureManager.getTexture("question_block_empty_texture")));
+
+    m_blocks.push_back(std::make_unique<BrickBlock>(
+        sf::Vector2f(332.f, 200.f), sf::Vector2f(32.f, 32.f),
+        m_textureManager.getTexture("brick_block_texture")));
+
+    m_blocks.push_back(std::make_unique<QuestionBlock>(
+        sf::Vector2f(364.f, 200.f), sf::Vector2f(32.f, 32.f),
+        m_textureManager.getTexture("question_block_active_texture"),
+        m_textureManager.getTexture("question_block_empty_texture")));
 
 
-    sf::Vector2f playerStart = { 100.f, 300.f };
-    sf::Vector2f playerSize = { 50.f, 50.f };
-    m_player = std::make_unique<Player>(playerStart, playerSize, m_textureManager.getTexture("player_texture"));
 
-    // What it does: Dynamically creates new Platform objects.
-    // Why it's used: To add solid ground for the player.
-    // How it works: Uses 'new' to allocate on the heap, and stores pointers in m_platforms.
-    //               These platforms will need to be deleted in the Game destructor.
-    m_platforms.push_back(new Platform(sf::Vector2f(0.f, 500.f), sf::Vector2f(800.f, 100.f))); // Ground platform
-    m_platforms.push_back(new Platform(sf::Vector2f(200.f, 350.f), sf::Vector2f(200.f, 30.f))); // Elevated platform
-    m_platforms.push_back(new Platform(sf::Vector2f(500.f, 250.f), sf::Vector2f(150.f, 30.f))); // Another platform
-
+    m_farBackground->setTexture(m_textureManager.getTexture("background_mountains"));
+    m_midBackground->setTexture(m_textureManager.getTexture("background_clouds"));
     m_backgroundSprite->setTexture(m_textureManager.getTexture("background_sky"));
-    sf::Vector2u windowSize = m_window.getSize();
-    sf::Vector2u bgTexSize = m_textureManager.getTexture("background_sky").getSize();
-    m_backgroundSprite->setScale(
-        { static_cast<float>(windowSize.x / bgTexSize.x),
-        static_cast<float>(windowSize.y / bgTexSize.y)
-        });
+
+    sf::Vector2u viewSize = m_camera.getSize();
+    m_farBackground->setScale({ static_cast<float>(viewSize.x) / m_farBackground->getGlobalBounds().size.x, static_cast<float>(viewSize.y) / m_farBackground->getGlobalBounds().size.y });
+    m_midBackground->setScale({ static_cast<float>(viewSize.x) / m_midBackground->getGlobalBounds().size.x, static_cast<float>(viewSize.y) / m_midBackground->getGlobalBounds().size.y });
+    m_backgroundSprite->setScale({ static_cast<float>(viewSize.x) / m_backgroundSprite->getGlobalBounds().size.x, static_cast<float>(viewSize.y) / m_backgroundSprite->getGlobalBounds().size.y });
+
+    //m_scoreText.setFont(m_font);
+    m_scoreText.setCharacterSize(24);
+    m_scoreText.setFillColor(sf::Color::White);
+    m_scoreText.setPosition({ 10, 10 });
+    m_scoreText.setString("SCORE: 000000");
+}
+
+void Game::renderBackgroundLayers()
+{
+    sf::View currentView = m_window.getView();
+    sf::Vector2f cameraCenter = currentView.getCenter();
+    sf::Vector2f viewSize = currentView.getSize();
+
+    float parallaxFactorFar = 0.1f;
+    float parallaxFactorMid = 0.3f;
+
+    sf::Vector2f farBgPos;
+    farBgPos.x = cameraCenter.x * parallaxFactorFar - viewSize.x / 2;
+    farBgPos.y = 0;
+    m_farBackground->setPosition(farBgPos);
+
+    sf::Vector2f midBgPos;
+    midBgPos.x = cameraCenter.x * parallaxFactorMid - viewSize.x / 2;
+    midBgPos.y = 0;
+    m_midBackground->setPosition(midBgPos);
+
+    m_backgroundSprite->setPosition({ cameraCenter.x - viewSize.x / 2, 0 });
+
+    if(m_backgroundSprite)
+        m_window.draw(*m_backgroundSprite);
+    if (m_midBackground)
+        m_window.draw(*m_midBackground);
+    if (m_farBackground)
+        m_window.draw(*m_farBackground);
+}
+
+void Game::renderHUD()
+{
+    sf::View hudView = m_window.getDefaultView();
+    m_window.setView(hudView);
+    m_window.draw(m_scoreText);
+    m_window.setView(m_camera.getView());
 }

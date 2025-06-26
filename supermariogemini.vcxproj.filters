@@ -13,49 +13,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Game">
-      <UniqueIdentifier>{40e712f9-d41d-4e4a-b7fe-c1ffdde417dd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Player">
-      <UniqueIdentifier>{07ac9522-ef1e-4c3d-8d98-ab93e67fceca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\World">
-      <UniqueIdentifier>{1026a870-9994-4aaa-8ffd-bb20e1683f2f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Entities">
-      <UniqueIdentifier>{e569dda1-c3c3-47b0-a5e2-3fa43143789d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Utils">
-      <UniqueIdentifier>{14fbbcb3-4603-45f1-9163-4c62d5b699b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Resources">
-      <UniqueIdentifier>{5843faf9-67f8-4772-bbee-dde305a36a24}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\UI">
-      <UniqueIdentifier>{46cc6f33-e2fa-46bd-bac6-09880cc7b91a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Source Files\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Level.cpp">
-      <Filter>Source Files\World</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Source Files\Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="HUD.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>Source Files\Entities</Filter>
     </ClCompile>
     <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files</Filter>
@@ -63,39 +24,81 @@
     <ClCompile Include="Platform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TileMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Level.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Goomba.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Coin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Block.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QuestionBlock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BrickBlock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.hpp">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.hpp">
-      <Filter>Source Files\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="Level.hpp">
-      <Filter>Source Files\World</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManager.hpp">
-      <Filter>Source Files\Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="HUD.hpp">
-      <Filter>Source Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Math.hpp">
-      <Filter>Source Files\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Constants.hpp">
-      <Filter>Source Files\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="resources.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Entity.hpp">
-      <Filter>Source Files\Entities</Filter>
     </ClInclude>
     <ClInclude Include="TextureManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platform.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TileMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Level.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Goomba.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Coin.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Block.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QuestionBlock.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BrickBlock.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
