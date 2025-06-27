@@ -15,5 +15,6 @@ public:
     sf::Texture& getTexture(const std::string& name);
 
 private:
-    std::map<std::string, sf::Texture> m_textures;
+    //std::map<std::string, sf::Texture> m_textures;
+    std::map<std::string, std::unique_ptr<sf::Texture>> m_textures;
 };

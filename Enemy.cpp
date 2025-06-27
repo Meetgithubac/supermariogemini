@@ -10,5 +10,5 @@ Enemy::Enemy(sf::Texture& texture)
     // No specific logic needed here for base Enemy
 }
 
-// Define the pure virtual destructor, even if empty
-//Enemy::~Enemy() = default;
+// Even a PURE virtual destructor MUST have a body. Add this.
+Enemy::~Enemy() = default;

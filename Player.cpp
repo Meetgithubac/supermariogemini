@@ -60,10 +60,10 @@ void Player::update(sf::Time deltaTime, sf::Vector2u windowSize, const TileMap& 
         currentMovementSpeed *= m_sprintSpeedMultiplier;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
             m_velocity.x = currentMovementSpeed;
-            m_sprite.setOrigin({ m_sprite.getLocalBounds().size.x, 0 });
             m_sprite.setScale({ -std::abs(m_sprite.getScale().x), m_sprite.getScale().y });
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
+            m_sprite.setOrigin({ m_sprite.getLocalBounds().size.x, 0 });
             m_velocity.x = -currentMovementSpeed;
             m_sprite.setOrigin({ 0, 0 });
             m_sprite.setScale({ std::abs(m_sprite.getScale().x), m_sprite.getScale().y });

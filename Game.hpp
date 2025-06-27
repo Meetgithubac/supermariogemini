@@ -45,9 +45,12 @@ private:
 
     TextureManager m_textureManager;
 
-    Player m_player;
+    /*Player m_player;
 
-    TileMap m_tilemap;
+    TileMap m_tilemap;*/
+
+    std::unique_ptr<Player> m_player;
+    std::unique_ptr<TileMap> m_tilemap;
 
     std::vector<std::unique_ptr<Enemy>> m_enemies;
     std::vector<std::unique_ptr<Coin>> m_coins;

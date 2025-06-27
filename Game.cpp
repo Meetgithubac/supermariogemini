@@ -48,8 +48,9 @@ Game::Game()
     m_backgroundColorValue(200.f),
     m_colorIncreasing(false),
     m_isPaused(false),
-    m_tilemap(m_textureManager.getTexture("tileset_texture")),
+    /*m_tilemap(m_textureManager.getTexture("tileset_texture")),
     m_player(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture")), // Initialize m_player here
+    */
     m_scoreText(m_font),
     m_score(0)
 {
@@ -63,7 +64,11 @@ Game::Game()
     //m_scoreText.setPosition({10.f, 10.f});
     ////m_scoreText. ;
 
+
     loadAssets();
+    m_tilemap = std::make_unique<TileMap>(m_textureManager.getTexture("tileset_texture"));
+    m_player = std::make_unique<Player>(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture"));
+
     initGameObjects();
 }
 
@@ -104,13 +109,13 @@ void Game::update(sf::Time deltaTime)
 {
     if (!m_isPaused)
     {
-        m_player.update(deltaTime, m_window.getSize(), m_tilemap);
-        m_camera.update(m_player.getPosition());
+        m_player->update(deltaTime, m_window.getSize(), *m_tilemap);
+        m_camera.update(m_player->getPosition());
 
         for (const auto& enemy : m_enemies)
         {
-            enemy->update(deltaTime, m_tilemap);
-            enemy->checkPlayerCollision(m_player);
+            enemy->update(deltaTime, *m_tilemap);
+            enemy->checkPlayerCollision(*m_player);
         }
 
         m_enemies.erase(std::remove_if(m_enemies.begin(), m_enemies.end(),
@@ -122,7 +127,7 @@ void Game::update(sf::Time deltaTime)
         for (const auto& coin : m_coins)
         {
             coin->update(deltaTime);
-            coin->checkPlayerCollision(m_player, m_score);
+            coin->checkPlayerCollision(*m_player, m_score);
         }
 
         m_coins.erase(std::remove_if(m_coins.begin(), m_coins.end(),
@@ -134,7 +139,7 @@ void Game::update(sf::Time deltaTime)
         for (const auto& block : m_blocks)
         {
             block->update(deltaTime);
-            block->checkPlayerCollision(m_player, m_coins, m_score);
+            block->checkPlayerCollision(*m_player, m_coins, m_score);
         }
 
         m_blocks.erase(std::remove_if(m_blocks.begin(), m_blocks.end(),
@@ -174,7 +179,8 @@ void Game::render()
 
     renderBackgroundLayers();
 
-    m_window.draw(m_tilemap);
+    //if(m_tilemap)
+     m_window.draw(*m_tilemap);
 
     for (const auto& enemy : m_enemies)
     {
@@ -191,7 +197,7 @@ void Game::render()
         block->render(m_window);
     }
 
-    m_player.render(m_window);
+    m_player->render(m_window);
 
     renderHUD();
 
@@ -220,9 +226,14 @@ void Game::loadAssets()
 
 void Game::initGameObjects()
 {
-    m_tilemap.load(level, MAP_COLS, MAP_ROWS);
+    m_tilemap->load(level, MAP_COLS, MAP_ROWS);
     //m_player = Player(sf::Vector2f(100.f, 100.f), sf::Vector2f(50.f, 50.f), m_textureManager.getTexture("player_texture"));
-    m_player.setTextureManager(&m_textureManager);
+    m_player->setTextureManager(&m_textureManager);
+
+    m_farBackground.emplace(m_textureManager.getTexture("background_mountains"));
+    m_midBackground.emplace(m_textureManager.getTexture("background_clouds"));
+    m_backgroundSprite.emplace(m_textureManager.getTexture("background_sky"));
+
 
     m_enemies.push_back(std::make_unique<Goomba>(sf::Vector2f(200.f, 400.f), sf::Vector2f(32.f, 32.f), m_textureManager.getTexture("goomba_texture")));
     m_enemies.push_back(std::make_unique<Goomba>(sf::Vector2f(600.f, 400.f), sf::Vector2f(32.f, 32.f), m_textureManager.getTexture("goomba_texture")));
@@ -248,10 +259,11 @@ void Game::initGameObjects()
         m_textureManager.getTexture("question_block_empty_texture")));
 
 
-
+    /*
     m_farBackground->setTexture(m_textureManager.getTexture("background_mountains"));
     m_midBackground->setTexture(m_textureManager.getTexture("background_clouds"));
     m_backgroundSprite->setTexture(m_textureManager.getTexture("background_sky"));
+    */
 
     sf::Vector2u viewSize = m_camera.getSize();
     m_farBackground->setScale({ static_cast<float>(viewSize.x) / m_farBackground->getGlobalBounds().size.x, static_cast<float>(viewSize.y) / m_farBackground->getGlobalBounds().size.y });

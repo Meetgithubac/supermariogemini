@@ -10,7 +10,7 @@ class Enemy
 public:
     explicit Enemy(sf::Texture& texture);
 
-    virtual ~Enemy() = default; // Pure virtual destructor, define in .cpp
+    virtual ~Enemy() = 0; // Pure virtual destructor, define in .cpp
 
     virtual void update(sf::Time deltaTime, const class TileMap& tilemap) = 0;
     virtual void render(sf::RenderWindow& window) = 0;
